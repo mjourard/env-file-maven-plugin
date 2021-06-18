@@ -9,6 +9,11 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Test MyMojo</name>
+  <properties>
+    <!-- dot represents the top-level directory of the project   -->
+    <envFileDirectory>./src/test/resources/project-to-test</envFileDirectory>
+  </properties>
+
 
   <build>
     <plugins>

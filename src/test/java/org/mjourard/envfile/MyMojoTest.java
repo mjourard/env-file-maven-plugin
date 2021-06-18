@@ -8,6 +8,8 @@ import org.junit.Rule;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyMojoTest
 {
@@ -36,17 +38,20 @@ public class MyMojoTest
         assertNotNull( pom );
         assertTrue( pom.exists() );
 
-        MyMojo myMojo = ( MyMojo ) rule.lookupConfiguredMojo( pom, "touch" );
+        MyMojo myMojo = ( MyMojo ) rule.lookupConfiguredMojo( pom, "loadenv" );
         assertNotNull( myMojo );
         myMojo.execute();
 
-        File outputDirectory = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
-        assertNotNull( outputDirectory );
-        assertTrue( outputDirectory.exists() );
+        Map<String, String> expectedVars = new HashMap<String, String>();
+        expectedVars.put("WEBSITE_URL", "https://mjourard.github.io");
+        expectedVars.put("USERNAME", "francis");
+        expectedVars.put("PASSWORD", "falconfliesfreely");
 
-        File touch = new File( outputDirectory, "touch.txt" );
-        assertTrue( touch.exists() );
-
+        for (String key : expectedVars.keySet()) {
+            String systemVal = System.getProperty(key);
+            assertNotNull(systemVal);
+            assertEquals(systemVal, expectedVars.get(key));
+        }
     }
 
     /** Do not need the MojoRule. */

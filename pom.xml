@@ -10,21 +10,48 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>env-file-maven-plugin Maven Plugin</name>
-
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
-
+  <name>Dotenv File-loading Maven Plugin</name>
+  <description>A maven plugin for loading .env files during the phases of the Maven build and packaging process.</description>
+  <url>https://github.com/mjourard/env-file-maven-plugin</url>
   <prerequisites>
     <maven>${maven.version}</maven>
   </prerequisites>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/mjourard/env-file-maven-plugin/issues</url>
+  </issueManagement>
+  <inceptionYear>2021</inceptionYear>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>git@github.com:mjourard/env-file-maven-plugin.git</connection>
+    <developerConnection>git@github.com:mjourard/env-file-maven-plugin.git</developerConnection>
+    <url>https://github.com/mjourard/env-file-maven-plugin</url>
+  </scm>
+  <organization>
+    <name>Matt Jourard OSS Projects</name>
+    <url>https://mjourard.github.io</url>
+  </organization>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>2.5.1</version>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.version>3.3.9</maven.version>
-    <envFileDirectory>home</envFileDirectory>
   </properties>
 
   <dependencies>
