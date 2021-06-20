@@ -2,6 +2,7 @@ package org.mjourard.envfile;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.github.cdimascio.dotenv.DotenvEntry;
 import io.github.cdimascio.dotenv.DotenvException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -11,9 +12,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Goal which loads a dotenv (.env) file into the environment variables for the rest of the maven phase which the plugin is defined for
@@ -47,14 +52,27 @@ public class MyMojo extends AbstractMojo {
         String tempEnvFileDirectory =  evaluatePath(envFileDirectory);
         getLog().info("Loading env file from '" + makePathDirectory(tempEnvFileDirectory) + envFileName + "'");
 
+        Dotenv dotenv = null;
+
         try {
-            Dotenv dotenv = Dotenv.configure()
+             dotenv = Dotenv.configure()
                     .directory(tempEnvFileDirectory)
                     .filename(envFileName)
                     .systemProperties()
                     .load();
         } catch (DotenvException dee) {
             throw new MojoExecutionException("Error while loading env file", dee);
+        }
+
+        Map<String, String> newEnv = new HashMap<>();
+        for(DotenvEntry entry : dotenv.entries()) {
+            newEnv.put(entry.getKey(), entry.getValue());
+        }
+
+        try {
+            setEnv(newEnv);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Error while loading environment variables from parsed env file", e);
         }
     }
 
@@ -67,5 +85,32 @@ public class MyMojo extends AbstractMojo {
             return path;
         }
         return path + File.separator;
+    }
+
+    protected static void setEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for(Class cl : classes) {
+                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
+        }
     }
 }

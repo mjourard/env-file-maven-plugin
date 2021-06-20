@@ -44,13 +44,17 @@ public class MyMojoTest
 
         Map<String, String> expectedVars = new HashMap<String, String>();
         expectedVars.put("WEBSITE_URL", "https://mjourard.github.io");
-        expectedVars.put("USERNAME", "francis");
+        expectedVars.put("TEMP_USERNAME", "francis");
         expectedVars.put("PASSWORD", "falconfliesfreely");
 
         for (String key : expectedVars.keySet()) {
             String systemVal = System.getProperty(key);
             assertNotNull(systemVal);
-            assertEquals(systemVal, expectedVars.get(key));
+            assertEquals(expectedVars.get(key), systemVal);
+            String envVal = System.getenv(key);
+            assertNotNull(envVal);
+            assertEquals(expectedVars.get(key), envVal);
+
         }
     }
 
