@@ -77,6 +77,8 @@
         <maven.invoker.plugin.version>3.2.2</maven.invoker.plugin.version>
         <plugin.goal.prefix>envfile</plugin.goal.prefix>
         <github.global.server>github</github.global.server>
+<!--        <github.site.repositoryName>env-file-maven-plugin</github.site.repositoryName>-->
+<!--        <github.site.repositoryOwner>mjourard</github.site.repositoryOwner>-->
     </properties>
 
     <dependencies>
@@ -232,6 +234,7 @@
                 <version>0.12</version>
                 <configuration>
                     <message>Creating site for ${project.version}</message>
+                    <dryRun>true</dryRun>
                 </configuration>
                 <executions>
                     <execution>
