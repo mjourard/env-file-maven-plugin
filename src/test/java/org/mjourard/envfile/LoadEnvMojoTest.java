@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MyMojoTest
+public class LoadEnvMojoTest
 {
     @Rule
     public MojoRule rule = new MojoRule()
@@ -38,9 +38,9 @@ public class MyMojoTest
         assertNotNull( pom );
         assertTrue( pom.exists() );
 
-        MyMojo myMojo = ( MyMojo ) rule.lookupConfiguredMojo( pom, "loadenv" );
-        assertNotNull( myMojo );
-        myMojo.execute();
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        assertNotNull(loadEnvMojo);
+        loadEnvMojo.execute();
 
         Map<String, String> expectedVars = new HashMap<String, String>();
         expectedVars.put("WEBSITE_URL", "https://mjourard.github.io");
@@ -61,9 +61,9 @@ public class MyMojoTest
         assertNotNull( pom );
         assertTrue( pom.exists() );
 
-        MyMojo myMojo = ( MyMojo ) rule.lookupConfiguredMojo( pom, "loadenv" );
-        assertNotNull( myMojo );
-        myMojo.execute();
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        assertNotNull(loadEnvMojo);
+        loadEnvMojo.execute();
 
         Map<String, String> expectedVars = new HashMap<String, String>();
         expectedVars.put("WEBSITE_URL", "https://mjourard.github.io");

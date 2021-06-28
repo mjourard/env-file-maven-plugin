@@ -16,7 +16,6 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -27,7 +26,7 @@ import java.util.Map;
  * Goal which loads a dotenv (.env) file into the environment variables for the rest of the maven phase which the plugin is defined for
  */
 @Mojo(name = "loadenv", defaultPhase = LifecyclePhase.TEST)
-public class MyMojo extends AbstractMojo {
+public class LoadEnvMojo extends AbstractMojo {
     /**
      * Directory of the env file.
      * Dot (.) will evaluate to the directory of the pom file of which was executing the goal that this plugin is a part of.

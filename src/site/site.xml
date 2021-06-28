@@ -5,7 +5,7 @@
             <item name="Introduction" href="index.html"/>
             <item name="Goals" href="plugin-info.html"/>
             <item name="Usage" href="usage.html"/>
-            <item name="FAQ" href="faq.html"/>
+            <item name="Changelog" href="changelog.html"/>
         </menu>
         <menu ref="reports" inherit="top" />
     </body>
@@ -18,14 +18,21 @@
         <fluidoSkin>
             <topBarEnabled>true</topBarEnabled>
             <sideBarEnabled>true</sideBarEnabled>
-            <googleSearch>
-                <sitesearch>${project.url}</sitesearch>
-            </googleSearch>
+<!--            Enable this if we want the site to be searchable again... -->
+<!--            <googleSearch>-->
+<!--                <sitesearch>${project.url}</sitesearch>-->
+<!--            </googleSearch>-->
+            <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
             <gitHub>
                 <projectId>mjourard/env-file-maven-plugin</projectId>
                 <ribbonOrientation>right</ribbonOrientation>
                 <ribbonColor>gray</ribbonColor>
             </gitHub>
+            <twitter>
+                <user>jourardmatt</user>
+                <showUser>true</showUser>
+                <showFollowers>false</showFollowers>
+            </twitter>
         </fluidoSkin>
     </custom>
 </project>
