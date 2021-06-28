@@ -4,12 +4,15 @@ package org.mjourard.envfile;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.github.cdimascio.dotenv.DotenvEntry;
 import io.github.cdimascio.dotenv.DotenvException;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -27,18 +30,32 @@ import java.util.Map;
 public class MyMojo extends AbstractMojo {
     /**
      * Directory of the env file.
-     * TODO: redo default directory to look in root of directory where pom.xml exists.
-     * ${project.basedir} should work but is evaluating to empty
+     * Dot (.) will evaluate to the directory of the pom file of which was executing the goal that this plugin is a part of.
+     * Path will be evaluate using the following: FileSystems.getDefault().getPath(path).normalize().toAbsolutePath()
+     *
+     * Doesn't matter if it ends with a directory separator, one will be appended if it is missing.
+     *
      */
-    @Parameter(property = "envFileDirectory", required = true)
+    @Parameter(defaultValue = "./", property = "envFileDirectory", required = true)
     private String envFileDirectory;
 
     /**
-     * Name of the env file, including the extension if it has one
+     * Name of the env file, including the extension if it has one.
      *
      */
     @Parameter(defaultValue = ".env", property = "envFileName", required = true)
     private String envFileName;
+
+    /**
+     * The maven project.
+     *
+     */
+    @Parameter(readonly = true, defaultValue = "${project}")
+    private MavenProject project;
+    private Model model;
+    private Build build;
+    private String finalName;
+    private File targetDir;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (envFileDirectory == null || envFileDirectory.isEmpty()) {
@@ -77,7 +94,8 @@ public class MyMojo extends AbstractMojo {
     }
 
     private String evaluatePath(String path) {
-        return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
+        return project.getModel().getProjectDirectory().toPath().resolve(path).normalize().toAbsolutePath().toString();
+//        return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
     }
 
     public static String makePathDirectory(String path) {

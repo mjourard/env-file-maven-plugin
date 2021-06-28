@@ -10,9 +10,9 @@
   <packaging>jar</packaging>
   <name>Test MyMojo</name>
   <properties>
-    <!-- dot represents the directory of the pom.xml file of the project   -->
-    <envFileDirectory>./directory-of-env-files</envFileDirectory>
-    <envFileName>my.fancy.env</envFileName>
+    <!-- testing without the properties defined to test the default properties   -->
+<!--    <envFileDirectory>./</envFileDirectory>-->
+<!--    <envFileName>.env</envFileName>-->
   </properties>
 
 

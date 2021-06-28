@@ -31,7 +31,7 @@ public class MyMojoTest
      * @throws Exception if any
      */
     @Test
-    public void testSomething()
+    public void testTypicalUsage()
             throws Exception
     {
         File pom = new File( "target/test-classes/project-to-test/" );
@@ -47,6 +47,33 @@ public class MyMojoTest
         expectedVars.put("TEMP_USERNAME", "francis");
         expectedVars.put("PASSWORD", "falconfliesfreely");
 
+        checkExpectedEnvVars(expectedVars);
+    }
+
+    /**
+     * @throws Exception if any
+     */
+    @Test
+    public void testDefaultUsage()
+            throws Exception
+    {
+        File pom = new File( "target/test-classes/project-using-defaults/" );
+        assertNotNull( pom );
+        assertTrue( pom.exists() );
+
+        MyMojo myMojo = ( MyMojo ) rule.lookupConfiguredMojo( pom, "loadenv" );
+        assertNotNull( myMojo );
+        myMojo.execute();
+
+        Map<String, String> expectedVars = new HashMap<String, String>();
+        expectedVars.put("WEBSITE_URL", "https://mjourard.github.io");
+        expectedVars.put("TEMP_USERNAME", "francis");
+        expectedVars.put("PASSWORD", "falconfliesfreely");
+
+        checkExpectedEnvVars(expectedVars);
+    }
+
+    public void checkExpectedEnvVars(Map<String, String> expectedVars) {
         for (String key : expectedVars.keySet()) {
             String systemVal = System.getProperty(key);
             assertNotNull(systemVal);
@@ -54,7 +81,6 @@ public class MyMojoTest
             String envVal = System.getenv(key);
             assertNotNull(envVal);
             assertEquals(expectedVars.get(key), envVal);
-
         }
     }
 

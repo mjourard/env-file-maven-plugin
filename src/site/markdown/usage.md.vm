@@ -1,0 +1,41 @@
+## Velocity treats double hashes as comments, which messes with markdown files. So $H can be used instead.
+#set( $H = '#' )
+
+Usage
+-----
+
+First, define the name and location of your `.env` file within your maven properties. The directory is evaluated from the directory in which this plugin is defined within a pom.xml file.
+Define as such:
+
+    <properties>
+        <envFileDirectory>../env-files</envFileDirectory>
+        <envFileName>.env</envFileName>
+    </properties>
+
+This plugin is only supposed to be used for setting environment variables during the test phase.
+For this reason, set the execution context to be during one of the phases executed as part of the `test` life cycle but before the execution. In this case, we'll go with the `generate-test-resources` phase, but it can be any of the phases executed beforehand.
+
+Add the plugin to your pom:
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>loadenv</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+And then the plugin will execute when you call:
+
+	mvn test
+
