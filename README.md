@@ -16,4 +16,9 @@ Development
 
 [![Build Status](https://travis-ci.org/mjourard/env-file-maven-plugin.svg?branch=main)](https://travis-ci.org/mjourard/multi-module-maven-release-plugin) ![Maven Central](https://img.shields.io/maven-central/v/org.mjourard/env-file-maven-plugin.svg)
 
+Publishing Documentation
+========================
+
+Run `mvn site` when you have an OAuth2 Token configured as a server in ~/.m2/settings.xml
+
 
