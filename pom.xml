@@ -233,15 +233,16 @@
                 <artifactId>site-maven-plugin</artifactId>
                 <version>0.12</version>
                 <configuration>
-                    <message>Creating site for ${project.version}</message>
+                    <message>Creating site for ${project.name} ${project.version}</message>
                     <dryRun>false</dryRun>
+                    <merge>true</merge>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>site</goal>
                         </goals>
-                        <phase>site</phase>
+                        <phase>site-deploy</phase>
                     </execution>
                 </executions>
             </plugin>
