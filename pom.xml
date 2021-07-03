@@ -38,6 +38,23 @@
         <name>Matt Jourard OSS Projects</name>
         <url>https://mjourard.github.io</url>
     </organization>
+    <developers>
+        <developer>
+            <id>mjourard</id>
+            <name>Matthew Jourard</name>
+            <email>mjourard@gmail.com</email>
+            <url>https://mjourard.github.io</url>
+            <organization>Matt Jourard OSS Projects</organization>
+            <organizationUrl>https://mjourard.github.io</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>America/New_York</timezone>
+            <properties>
+                <picUrl>https://mjourard.github.io/assets/img/BrandProfilePic.jpg</picUrl>
+            </properties>
+        </developer>
+    </developers>
     <distributionManagement>
         <snapshotRepository>
             <id>ossrhAccessToken</id>
