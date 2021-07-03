@@ -1,4 +1,4 @@
-package org.mjourard.envfile;
+package io.github.mjourard;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
