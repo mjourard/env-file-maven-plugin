@@ -1,6 +1,6 @@
 dist: trusty
 language: java
 jdk:
-  - openjdk11
+  - openjdk8
 before_install:
   - "export M2_HOME=/usr/local/maven"
