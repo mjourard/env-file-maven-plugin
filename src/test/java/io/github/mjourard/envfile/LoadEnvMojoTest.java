@@ -1,15 +1,16 @@
-package io.github.mjourard;
+package io.github.mjourard.envfile;
 
 
 import org.apache.maven.plugin.testing.MojoRule;
 import org.apache.maven.plugin.testing.WithoutMojo;
-
 import org.junit.Rule;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class LoadEnvMojoTest
 {
@@ -17,7 +18,7 @@ public class LoadEnvMojoTest
     public MojoRule rule = new MojoRule()
     {
         @Override
-        protected void before() throws Throwable 
+        protected void before() throws Throwable
         {
         }
 
