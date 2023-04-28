@@ -1,6 +1,5 @@
 package io.github.mjourard.envfile;
 
-
 import org.apache.maven.plugin.testing.MojoRule;
 import org.apache.maven.plugin.testing.WithoutMojo;
 import org.junit.Rule;
@@ -12,19 +11,15 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class LoadEnvMojoTest
-{
+public class LoadEnvMojoTest {
     @Rule
-    public MojoRule rule = new MojoRule()
-    {
+    public MojoRule rule = new MojoRule() {
         @Override
-        protected void before() throws Throwable
-        {
+        protected void before() {
         }
 
         @Override
-        protected void after()
-        {
+        protected void after() {
         }
     };
 
@@ -32,9 +27,7 @@ public class LoadEnvMojoTest
      * @throws Exception if any
      */
     @Test
-    public void testTypicalUsage()
-            throws Exception
-    {
+    public void testTypicalUsage() throws Exception {
         File pom = new File( "target/test-classes/project-to-test/" );
         assertNotNull( pom );
         assertTrue( pom.exists() );
@@ -55,9 +48,7 @@ public class LoadEnvMojoTest
      * @throws Exception if any
      */
     @Test
-    public void testDefaultUsage()
-            throws Exception
-    {
+    public void testDefaultUsage() throws Exception {
         File pom = new File( "target/test-classes/project-using-defaults/" );
         assertNotNull( pom );
         assertTrue( pom.exists() );
@@ -94,4 +85,3 @@ public class LoadEnvMojoTest
     }
 
 }
-
