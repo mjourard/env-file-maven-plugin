@@ -1,6 +1,0 @@
-dist: trusty
-language: java
-jdk:
-  - openjdk8
-before_install:
-  - "export M2_HOME=/usr/local/maven"
