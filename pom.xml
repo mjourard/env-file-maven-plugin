@@ -32,7 +32,7 @@
         <connection>scm:git:git://github.com/mjourard/env-file-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:mjourard/env-file-maven-plugin.git</developerConnection>
         <url>https://github.com/mjourard/env-file-maven-plugin</url>
-        <tag>env-file-maven-plugin-1.0</tag>
+        <tag>env-file-maven-plugin-${project.version}</tag>
     </scm>
     <organization>
         <name>Matt Jourard OSS Projects</name>
