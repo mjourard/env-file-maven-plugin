@@ -1,4 +1,5 @@
-# env-file-maven-plugin
+# env-file-maven-plugin ![Build Status](https://github.com/cloudsimplus/cloudsimplus/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/io.github.mjourard/env-file-maven-plugin.svg)
+
 A maven plugin that loads in a dotenv (.env) file during the build process.
 
 For those that liked the ruby package and wanted it for their maven build process. 
@@ -13,8 +14,6 @@ Full usage details and more are available on the
 
 Development
 ===========
-
-[![Build Status](https://travis-ci.org/mjourard/env-file-maven-plugin.svg?branch=main)](https://travis-ci.org/mjourard/multi-module-maven-release-plugin) ![Maven Central](https://img.shields.io/maven-central/v/org.mjourard/env-file-maven-plugin.svg)
 
 Publishing Documentation
 ========================
