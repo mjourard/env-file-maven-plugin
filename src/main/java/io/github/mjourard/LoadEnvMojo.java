@@ -71,17 +71,17 @@ public class LoadEnvMojo extends AbstractMojo {
         Dotenv dotenv = null;
 
         try {
-             dotenv = Dotenv.configure()
-                    .directory(tempEnvFileDirectory)
-                    .filename(envFileName)
-                    .systemProperties()
-                    .load();
+            dotenv = Dotenv.configure()
+                .directory(tempEnvFileDirectory)
+                .filename(envFileName)
+                .systemProperties()
+                .load();
         } catch (DotenvException dee) {
             throw new MojoExecutionException("Error while loading env file", dee);
         }
 
         Map<String, String> newEnv = new HashMap<>();
-        for(DotenvEntry entry : dotenv.entries()) {
+        for (DotenvEntry entry : dotenv.entries()) {
             newEnv.put(entry.getKey(), entry.getValue());
         }
 
@@ -92,19 +92,19 @@ public class LoadEnvMojo extends AbstractMojo {
         }
     }
 
-    private String evaluatePath(String path) {
+    private String evaluatePath(final String path) {
         return project.getModel().getProjectDirectory().toPath().resolve(path).normalize().toAbsolutePath().toString();
 //        return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
     }
 
-    public static String makePathDirectory(String path) {
+    public static String makePathDirectory(final String path) {
         if (Files.isDirectory(Paths.get(path))) {
             return path;
         }
         return path + File.separator;
     }
 
-    protected static void setEnv(Map<String, String> newenv) throws Exception {
+    protected static void setEnv(final Map<String, String> newenv) throws Exception {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
@@ -118,8 +118,8 @@ public class LoadEnvMojo extends AbstractMojo {
         } catch (NoSuchFieldException e) {
             Class[] classes = Collections.class.getDeclaredClasses();
             Map<String, String> env = System.getenv();
-            for(Class cl : classes) {
-                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+            for (Class cl : classes) {
+                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
                     field.setAccessible(true);
                     Object obj = field.get(env);
