@@ -339,6 +339,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <!-- Path to your checkstyle configuration file -->
+                    <propertyExpansion>config_loc=${basedir}</propertyExpansion>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <suppressionsLocation>${basedir}/checkstyle-suppressions.xml</suppressionsLocation>
+                    <!-- Tell the plugin to fail the build if there are checkstyle errors -->
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
