@@ -8,7 +8,9 @@ import org.junit.Rule;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LoadEnvMojoTest
@@ -48,6 +50,33 @@ public class LoadEnvMojoTest
         expectedVars.put("PASSWORD", "falconfliesfreely");
 
         checkExpectedEnvVars(expectedVars);
+    }
+
+    @Test
+    public void testSkipConfiguration() throws Exception {
+        File pom = new File( "target/test-classes/project-skips-plugin/" );
+        assertNotNull( pom );
+        assertTrue( pom.exists() );
+
+        List<String> skippedVars = new ArrayList<String>();
+        skippedVars.add("WEBSITE_URL");
+        skippedVars.add("TEMP_USERNAME");
+        skippedVars.add("PASSWORD");
+
+        for (String key : skippedVars) {
+            System.clearProperty(key);
+            String systemVal = System.getProperty(key);
+            assertNull(systemVal);
+        }
+
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        assertNotNull(loadEnvMojo);
+        loadEnvMojo.execute();
+
+        for (String key : skippedVars) {
+            String systemVal = System.getProperty(key);
+            assertNull(systemVal);
+        }
     }
 
     /**
