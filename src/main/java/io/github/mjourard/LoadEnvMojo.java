@@ -4,8 +4,6 @@ package io.github.mjourard;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.github.cdimascio.dotenv.DotenvEntry;
 import io.github.cdimascio.dotenv.DotenvException;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -59,10 +57,6 @@ public class LoadEnvMojo extends AbstractMojo {
      */
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
-    private Model model;
-    private Build build;
-    private String finalName;
-    private File targetDir;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {
@@ -128,9 +122,9 @@ public class LoadEnvMojo extends AbstractMojo {
             Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
             cienv.putAll(newenv);
         } catch (NoSuchFieldException e) {
-            Class[] classes = Collections.class.getDeclaredClasses();
+            Class<?>[] classes = Collections.class.getDeclaredClasses();
             Map<String, String> env = System.getenv();
-            for (Class cl : classes) {
+            for (Class<?> cl : classes) {
                 if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
                     field.setAccessible(true);

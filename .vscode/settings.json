@@ -4,4 +4,8 @@
         "editor.tabSize": 4,
         "editor.insertSpaces": true
     },
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.checkstyle.properties": { 
+        "config_loc": "${workspaceFolder}"
+    },
 }

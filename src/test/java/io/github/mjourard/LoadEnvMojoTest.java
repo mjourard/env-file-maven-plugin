@@ -5,27 +5,28 @@ import org.apache.maven.plugin.testing.MojoRule;
 import org.apache.maven.plugin.testing.WithoutMojo;
 
 import org.junit.Rule;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LoadEnvMojoTest
-{
+public class LoadEnvMojoTest {
     @Rule
-    public MojoRule rule = new MojoRule()
-    {
+    public MojoRule rule = new MojoRule() {
         @Override
-        protected void before() throws Throwable 
-        {
+        protected void before() throws Throwable {
         }
 
         @Override
-        protected void after()
-        {
+        protected void after() {
         }
     };
 
@@ -33,14 +34,12 @@ public class LoadEnvMojoTest
      * @throws Exception if any
      */
     @Test
-    public void testTypicalUsage()
-            throws Exception
-    {
-        File pom = new File( "target/test-classes/project-to-test/" );
-        assertNotNull( pom );
-        assertTrue( pom.exists() );
+    public void testTypicalUsage() throws Exception {
+        File pom = new File("target/test-classes/project-to-test/");
+        assertNotNull(pom);
+        assertTrue(pom.exists());
 
-        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo(pom, "loadenv");
         assertNotNull(loadEnvMojo);
         loadEnvMojo.execute();
 
@@ -54,9 +53,9 @@ public class LoadEnvMojoTest
 
     @Test
     public void testSkipConfiguration() throws Exception {
-        File pom = new File( "target/test-classes/project-skips-plugin/" );
-        assertNotNull( pom );
-        assertTrue( pom.exists() );
+        File pom = new File("target/test-classes/project-skips-plugin/");
+        assertNotNull(pom);
+        assertTrue(pom.exists());
 
         List<String> skippedVars = new ArrayList<String>();
         skippedVars.add("WEBSITE_URL");
@@ -69,7 +68,7 @@ public class LoadEnvMojoTest
             assertNull(systemVal);
         }
 
-        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo(pom, "loadenv");
         assertNotNull(loadEnvMojo);
         loadEnvMojo.execute();
 
@@ -83,14 +82,12 @@ public class LoadEnvMojoTest
      * @throws Exception if any
      */
     @Test
-    public void testDefaultUsage()
-            throws Exception
-    {
-        File pom = new File( "target/test-classes/project-using-defaults/" );
-        assertNotNull( pom );
-        assertTrue( pom.exists() );
+    public void testDefaultUsage() throws Exception {
+        File pom = new File("target/test-classes/project-using-defaults/");
+        assertNotNull(pom);
+        assertTrue(pom.exists());
 
-        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo( pom, "loadenv" );
+        LoadEnvMojo loadEnvMojo = (LoadEnvMojo) rule.lookupConfiguredMojo(pom, "loadenv");
         assertNotNull(loadEnvMojo);
         loadEnvMojo.execute();
 
@@ -102,7 +99,7 @@ public class LoadEnvMojoTest
         checkExpectedEnvVars(expectedVars);
     }
 
-    public void checkExpectedEnvVars(Map<String, String> expectedVars) {
+    public void checkExpectedEnvVars(final Map<String, String> expectedVars) {
         for (String key : expectedVars.keySet()) {
             String systemVal = System.getProperty(key);
             assertNotNull(systemVal);
@@ -116,9 +113,8 @@ public class LoadEnvMojoTest
     /** Do not need the MojoRule. */
     @WithoutMojo
     @Test
-    public void testSomethingWhichDoesNotNeedTheMojoAndProbablyShouldBeExtractedIntoANewClassOfItsOwn()
-    {
-        assertTrue( true );
+    public void testSomethingWhichDoesNotNeedTheMojoAndProbablyShouldBeExtractedIntoANewClassOfItsOwn() {
+        assertTrue(true);
     }
 
 }
