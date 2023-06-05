@@ -16,6 +16,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -45,6 +46,13 @@ public class LoadEnvMojo extends AbstractMojo {
     @Parameter(defaultValue = ".env", property = "envFileName", required = true)
     private String envFileName;
 
+
+    /**
+     * If set to 'true', this plugin will not do anything.
+     */
+    @Parameter(property = "skip", required = false, defaultValue = "false")
+    private Boolean skip;
+
     /**
      * The maven project.
      *
@@ -57,6 +65,10 @@ public class LoadEnvMojo extends AbstractMojo {
     private File targetDir;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("'skip' property found and set to true. Skipping the 'env-file-maven-plugin' plugin.");
+            return;
+        }
         if (envFileDirectory == null || envFileDirectory.isEmpty()) {
             throw new MojoFailureException("env file directory was empty");
         }
@@ -66,7 +78,7 @@ public class LoadEnvMojo extends AbstractMojo {
         }
 
         String tempEnvFileDirectory =  evaluatePath(envFileDirectory);
-        getLog().info("Loading env file from '" + makePathDirectory(tempEnvFileDirectory) + envFileName + "'");
+        getLog().info("Loading env file from '" + makePathDirectory(tempEnvFileDirectory) + FileSystems.getDefault().getSeparator() + envFileName + "'");
 
         Dotenv dotenv = null;
 

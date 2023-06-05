@@ -10,7 +10,6 @@
   <packaging>jar</packaging>
   <name>Test MyMojo</name>
   <properties>
-    <!-- dot represents the directory of the pom.xml file of the project   -->
     
   </properties>
 
@@ -22,8 +21,10 @@
         <artifactId>env-file-maven-plugin</artifactId>
         <version>2.0</version>
         <configuration>
+          <skip>true</skip>
+          <!-- dot represents the directory of the pom.xml file of the project   -->
           <envFileDirectory>./directory-of-env-files</envFileDirectory>
-          <envFileName>my.fancy.env</envFileName>
+          <envFileName>should.not.load.env</envFileName>
         </configuration>
       </plugin>
     </plugins>
