@@ -1,0 +1,14 @@
+name: Lint Repository
+description: Runs the various linters against the repository
+input:
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout current branch
+      uses: actions/checkout@v3        
+    - name: Lint Project Files
+      shell: bash
+      run: |
+        mvn checkstyle:check
+        echo "Finished linting project files!"

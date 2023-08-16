@@ -14,7 +14,8 @@ Full usage details and more are available on the
 Development
 ===========
 
-[![Build Status](https://travis-ci.org/mjourard/env-file-maven-plugin.svg?branch=main)](https://travis-ci.org/mjourard/multi-module-maven-release-plugin) ![Maven Central](https://img.shields.io/maven-central/v/org.mjourard/env-file-maven-plugin.svg)
+![Build Status](https://github.com/mjourard/env-file-maven-plugin/actions/workflows/publish.yaml?branch=main)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.mjourard/env-file-maven-plugin.svg)
 
 Publishing Documentation
 ========================
