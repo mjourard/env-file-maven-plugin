@@ -38,7 +38,7 @@ jobs:
       - name: Setup maven settings file
         uses: whelk-io/maven-settings-xml-action@v20
         with:
-          servers: '[{ "id": "ossrh", "username": ${{ secrets.sonatype_username }}, "password" : ${{ secrets.sonatype_password }} }]'
+          servers: '[{ "id": "ossrh", "username": "${{ secrets.sonatype_username }}", "password" : "${{ secrets.sonatype_password }}" }]'
       - name: Publish package
         run: mvn --batch-mode deploy
 
