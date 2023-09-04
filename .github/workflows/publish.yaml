@@ -12,6 +12,8 @@ on:
         required: true
       sonatype_password:
         required: true
+      gpg_secret:
+        required: true
   
 
 jobs:
@@ -39,6 +41,21 @@ jobs:
         uses: whelk-io/maven-settings-xml-action@v20
         with:
           servers: '[{ "id": "ossrh", "username": "${{ secrets.sonatype_username }}", "password" : "${{ secrets.sonatype_password }}" }]'
+          profiles: >
+            [
+              {
+                "id": "ossrh",
+                "activation": {
+                  "activeByDefault": "true"
+                },
+                "properties": {
+                  "gpg.passphrase": "${{ secrets.gpg_secret }}"
+                }
+              }
+            ]
       - name: Publish package
-        run: mvn --batch-mode deploy
-
+        run: | 
+          mvn --batch-mode deploy
+          mvn clean
+          mvn release:prepare
+          mvn release:perform -P release-sign-artifacts
