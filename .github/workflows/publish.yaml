@@ -36,7 +36,7 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Setup maven settings file
-        uses: whelk-io/maven-settings-xml-action@20
+        uses: whelk-io/maven-settings-xml-action@v20
         with:
           servers: '[{ "id": "ossrh", "username": ${{ secrets.sonatype_username }}, "password" : ${{ secrets.sonatype_password }} }]'
       - name: Publish package

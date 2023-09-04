@@ -1,6 +1,5 @@
 name: Lint Repository
 description: Runs the various linters against the repository
-input:
 
 runs:
   using: composite
