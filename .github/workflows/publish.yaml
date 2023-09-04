@@ -1,7 +1,18 @@
 name: Publish Maven Plugin Version
+# UNTESTED: taken from https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-maven
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+    secrets:
+      sonatype_username:
+        required: true
+      sonatype_password:
+        required: true
+  
 
 jobs:
   lint: 
@@ -13,9 +24,10 @@ jobs:
         uses: ./.github/actions/lint
   publish:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Maven Central Repository
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: '8'
@@ -23,9 +35,10 @@ jobs:
           server-id: ossrh
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
+      - name: Setup maven settings file
+        uses: whelk-io/maven-settings-xml-action@20
+        with:
+          servers: '[{ "id": "ossrh", "username": ${{ secrets.sonatype_username }}, "password" : ${{ secrets.sonatype_password }} }]'
       - name: Publish package
         run: mvn --batch-mode deploy
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
 
