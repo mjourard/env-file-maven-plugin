@@ -1,0 +1,91 @@
+name: Postrelease Workflow Manually Triggered
+run-name: Creating PR for ${{ inputs.release_branch }} branch to main
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: >
+          release_branch: The name of the release branch that should be merged back into the main branches develop and main, depending on branch type.
+        type: string
+        required: true
+      environments_deployed_to:
+        description: >
+          environments_deployed_to: Which prod environments were deployed to. Used in the tag message
+        type: string
+        default: usprivate,uspublic,ausprivate,canprivate,fedramp
+        required: false
+      release_date_override:
+        description: >
+          release_date_override: The date override in which the release occurred. Used in the tag message
+        type: string
+        required: false
+
+jobs:
+  create_pr_into_main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      - name: Checkout release branch for Node Setup
+        uses: actions/checkout@v4
+        with:
+          ref: develop # using develop because it didn't have the custom action in it
+          fetch-depth: 0 # required for the shared histories needed for merging
+          fetch-tags: true # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+          token: ${{ steps.get_workflow_token.outputs.token }}
+
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
+  
+
+      - name: determine branch type
+        id: determine_branch_type
+        run: |
+          BRANCH_TYPE=$(cut -d'/' -f1 <<<'${{ inputs.release_branch }}')
+          if [[ "$BRANCH_TYPE" == "release" ]]; then
+            echo "type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_TYPE" == "hotfix" ]]; then
+            echo "type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid branch name: branch does not apear to be one of the supported release branch types of either 'release' or 'hotfix'. Parsed value '$BRANCH_TYPE' for BRANCH_TYPE."
+            exit 1
+          fi
+
+      - name: Open PR into main
+        env:
+          TARGET_BRANCH: main
+          GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          git fetch origin --verbose
+          echo "checking out ${{ inputs.release_branch }}"
+          git checkout -b ${{ inputs.release_branch }} origin/${{ inputs.release_branch }}
+          git status
+          git merge-base ${{ inputs.release_branch }} origin/$TARGET_BRANCH # debugging statement
+          NEW_VERSION=$(npm pkg get version | xargs)
+          CUR_DATE=$(date +"%Y-%m-%d")
+          if [[ ! -z "${{ inputs.release_date_override }}" ]]; then
+            echo "release_date_override value of '${{ inputs.release_date_override }}' identified. Using that instead of $CUR_DATE."
+            CUR_DATE="${{ inputs.release_date_override }}"
+          fi
+          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE to ${{ inputs.environments_deployed_to }}"
+          echo "PR_BODY=$PR_BODY"
+          PR_URL=$(gh pr create \
+            --base $TARGET_BRANCH \
+            --fill-verbose \
+            --head ${{ inputs.release_branch }} \
+            --title "${{ inputs.release_branch }} into $TARGET_BRANCH" \
+            --body "$PR_BODY")
+          echo "Created PR at $PR_URL"
+          GH_TOKEN=${{ steps.get_workflow_token.outputs.token }} gh pr merge $PR_URL --auto --merge
