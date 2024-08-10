@@ -4,8 +4,6 @@ package io.github.mjourard;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.github.cdimascio.dotenv.DotenvEntry;
 import io.github.cdimascio.dotenv.DotenvException;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -16,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -45,18 +44,25 @@ public class LoadEnvMojo extends AbstractMojo {
     @Parameter(defaultValue = ".env", property = "envFileName", required = true)
     private String envFileName;
 
+
+    /**
+     * If set to 'true', this plugin will not do anything.
+     */
+    @Parameter(property = "skip", required = false, defaultValue = "false")
+    private Boolean skip;
+
     /**
      * The maven project.
      *
      */
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
-    private Model model;
-    private Build build;
-    private String finalName;
-    private File targetDir;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("'skip' property found and set to true. Skipping the 'env-file-maven-plugin' plugin.");
+            return;
+        }
         if (envFileDirectory == null || envFileDirectory.isEmpty()) {
             throw new MojoFailureException("env file directory was empty");
         }
@@ -66,22 +72,22 @@ public class LoadEnvMojo extends AbstractMojo {
         }
 
         String tempEnvFileDirectory =  evaluatePath(envFileDirectory);
-        getLog().info("Loading env file from '" + makePathDirectory(tempEnvFileDirectory) + envFileName + "'");
+        getLog().info("Loading env file from '" + makePathDirectory(tempEnvFileDirectory) + FileSystems.getDefault().getSeparator() + envFileName + "'");
 
         Dotenv dotenv = null;
 
         try {
-             dotenv = Dotenv.configure()
-                    .directory(tempEnvFileDirectory)
-                    .filename(envFileName)
-                    .systemProperties()
-                    .load();
+            dotenv = Dotenv.configure()
+                .directory(tempEnvFileDirectory)
+                .filename(envFileName)
+                .systemProperties()
+                .load();
         } catch (DotenvException dee) {
             throw new MojoExecutionException("Error while loading env file", dee);
         }
 
         Map<String, String> newEnv = new HashMap<>();
-        for(DotenvEntry entry : dotenv.entries()) {
+        for (DotenvEntry entry : dotenv.entries()) {
             newEnv.put(entry.getKey(), entry.getValue());
         }
 
@@ -92,19 +98,19 @@ public class LoadEnvMojo extends AbstractMojo {
         }
     }
 
-    private String evaluatePath(String path) {
+    private String evaluatePath(final String path) {
         return project.getModel().getProjectDirectory().toPath().resolve(path).normalize().toAbsolutePath().toString();
 //        return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
     }
 
-    public static String makePathDirectory(String path) {
+    public static String makePathDirectory(final String path) {
         if (Files.isDirectory(Paths.get(path))) {
             return path;
         }
         return path + File.separator;
     }
 
-    protected static void setEnv(Map<String, String> newenv) throws Exception {
+    protected static void setEnv(final Map<String, String> newenv) throws Exception {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
@@ -116,10 +122,10 @@ public class LoadEnvMojo extends AbstractMojo {
             Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
             cienv.putAll(newenv);
         } catch (NoSuchFieldException e) {
-            Class[] classes = Collections.class.getDeclaredClasses();
+            Class<?>[] classes = Collections.class.getDeclaredClasses();
             Map<String, String> env = System.getenv();
-            for(Class cl : classes) {
-                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+            for (Class<?> cl : classes) {
+                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
                     field.setAccessible(true);
                     Object obj = field.get(env);

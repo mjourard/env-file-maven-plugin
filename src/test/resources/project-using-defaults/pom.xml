@@ -9,20 +9,17 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Test MyMojo</name>
-  <properties>
-    <!-- testing without the properties defined to test the default properties   -->
-<!--    <envFileDirectory>./</envFileDirectory>-->
-<!--    <envFileName>.env</envFileName>-->
-  </properties>
-
 
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-my-plugin</artifactId>
+        <groupId>io.github.mjourard</groupId>
+        <artifactId>env-file-maven-plugin</artifactId>
+        <version>2.0</version>
         <configuration>
-          <!-- Specify the MyMojo parameter -->
-          <outputDirectory>target/test-harness/project-to-test</outputDirectory>
+          <!-- testing without the properties defined to test the default properties   -->
+          <!--    <envFileDirectory>./</envFileDirectory>-->
+          <!--    <envFileName>.env</envFileName>-->
         </configuration>
       </plugin>
     </plugins>

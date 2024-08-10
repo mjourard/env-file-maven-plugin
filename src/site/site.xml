@@ -28,11 +28,6 @@
                 <ribbonOrientation>right</ribbonOrientation>
                 <ribbonColor>gray</ribbonColor>
             </gitHub>
-            <twitter>
-                <user>jourardmatt</user>
-                <showUser>true</showUser>
-                <showFollowers>false</showFollowers>
-            </twitter>
         </fluidoSkin>
     </custom>
 </project>

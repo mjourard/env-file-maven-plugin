@@ -13,7 +13,8 @@ Define as such:
     </properties>
 
 This plugin is only supposed to be used for setting environment variables during the test phase.
-For this reason, set the execution context to be during one of the phases executed as part of the `test` life cycle but before the execution. In this case, we'll go with the `generate-test-resources` phase, but it can be any of the phases executed beforehand.
+For this reason, set the execution context to be during one of the phases executed as part of the `test` life cycle but before the execution. 
+In this case, we'll go with the `generate-test-resources` phase, but it can be any of the phases executed beforehand.
 
 Add the plugin to your pom:
 
