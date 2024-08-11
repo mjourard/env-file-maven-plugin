@@ -29,12 +29,6 @@ jobs:
           fetch-tags: true # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
           token: ${{ steps.get_workflow_token.outputs.token }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-
       - name: Setup git user
         uses: ./.github/actions/setup-git-user
 
@@ -47,7 +41,7 @@ jobs:
           git fetch origin --verbose
           git status
           git merge-base $HEAD_BRANCH origin/$TARGET_BRANCH # debugging statement
-          NEW_VERSION=$(npm pkg get version | xargs)
+          NEW_VERSION=$(git describe --tags --abbrev=0 | xargs)
           PR_URL=$(gh pr create \
             --base $TARGET_BRANCH \
             --fill-verbose \
