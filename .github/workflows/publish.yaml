@@ -7,14 +7,6 @@ on:
     inputs:
       environment:
         type: environment
-    secrets:
-      sonatype_username:
-        required: true
-      sonatype_password:
-        required: true
-      gpg_secret:
-        required: true
-  
 
 jobs:
   lint: 
