@@ -36,7 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.BASE_BRANCH }}
+          # ref: ${{ env.BASE_BRANCH }}
           fetch-depth: 0
           token: ${{ steps.get_workflow_token.outputs.token }}
           # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
