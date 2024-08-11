@@ -78,7 +78,7 @@ jobs:
           # create the new branch 
           NEW_BRANCH_NAME="${{ inputs.release_type }}/$RELEASE_VERSION"
           git checkout -b $NEW_BRANCH_NAME
-          mvn ---batch-mode release:prepare -Dtag=$NEW_TAG \
+          mvn --batch-mode release:prepare -Dtag=$NEW_TAG \
           -DreleaseVersion=$RELEASE_VERSION \
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
           git push -u origin $NEW_BRANCH_NAME
