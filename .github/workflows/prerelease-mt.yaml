@@ -62,17 +62,23 @@ jobs:
       - name: Create new branch
         run: |
           # determine what the new version will be
-          npm version ${{ inputs.version_bump_type }} --no-git-tag-version
           CUR_VERSION_RAW=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           CUR_VERSION=${CUR_VERSION_RAW//-SNAPSHOT/}
-          NEW_VERSION=$(pysemver bump ${{ inputs.version_bump_type }} $CUR_VERSION)
-          NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$NEW_VERSION
+          # If it's a patch, we don't need to bump it since the release plugin would have bumped it already
+          if [[ "${{ inputs.version_bump_type}}" == "patch" ]]; then
+            RELEASE_VERSION=$CUR_VERSION
+          else
+            RELEASE_VERSION=$(pysemver bump ${{ inputs.version_bump_type }} $CUR_VERSION)
+          fi
+          DEVELOP_VERSION=$(pysemver bump patch $RELEASE_VERSION)
+          
+          NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$RELEASE_VERSION
           echo "Creating tag $NEW_TAG"
           # create the new branch 
-          NEW_BRANCH_NAME="${{ inputs.release_type }}/$NEW_VERSION"
+          NEW_BRANCH_NAME="${{ inputs.release_type }}/$RELEASE_VERSION"
           git checkout -b $NEW_BRANCH_NAME
           mvn ---batch-mode release:prepare -Dtag=$NEW_TAG \
-          -DreleaseVersion=$NEW_VERSION \
-          -DdevelopmentVersion=$NEW_VERSION-SNAPSHOT
+          -DreleaseVersion=$RELEASE_VERSION \
+          -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
           git push -u origin $NEW_BRANCH_NAME
 
