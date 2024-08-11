@@ -1,0 +1,51 @@
+name: Push to Main
+run-name: 'release tag by ${{ github.event.pusher.username }} for SHA ${{ github.event.after }}'
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - '**' # Ignore pushes to tags
+  
+jobs:
+  tag_release_commit:
+    if: ${{ startsWith(github.ref, 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    env:
+      SHA: ${{ github.event.after }}
+    steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      - name: Checkout main branch for Node Setup
+        uses: actions/checkout@v4
+        with:
+          ref: main # using develop because it didn't have the custom action in it
+          fetch-depth: 0 # required for the shared histories needed for merging
+          fetch-tags: true # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+          token: ${{ steps.get_workflow_token.outputs.token }}
+
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
+
+      - name: Merge branch main into develop
+        env:
+          HEAD_BRANCH: main
+          TARGET_BRANCH: develop
+          GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          git fetch origin --verbose
+          git status
+          git merge-base $HEAD_BRANCH origin/$TARGET_BRANCH # debugging statement
+          NEW_VERSION=$(git describe --tags --abbrev=0 | xargs)
+          PR_URL=$(gh pr create \
+            --base $TARGET_BRANCH \
+            --fill-verbose \
+            --head $HEAD_BRANCH \
+            --title "$HEAD_BRANCH into $TARGET_BRANCH for v$NEW_VERSION")
+          echo "Created PR at $PR_URL"
+          gh pr merge $PR_URL --auto --merge

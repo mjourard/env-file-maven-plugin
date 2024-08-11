@@ -1,0 +1,87 @@
+name: Prerelease Workflow Manually Triggered
+run-name: Creating ${{ inputs.release_type }} branch for production release.
+# This will create a new branch off of the develop branch, or the main branch if it's a hotfix
+# Does not run any maven commands since that should all happen during the publishing process
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: The type of release being sent out. 'release' types are built off the develop branch. 'hotfix' types are built off of the main branch.
+        type: choice
+        default: release
+        options:
+          - release
+          - hotfix
+      version_bump_type:
+        description: What type of semantic version increase are we applying to the current version? Major if there are breaking changes to the end-user. Minor if there are cosmetic or functional changes to the service. Patch for everything else.
+        type: choice
+        default: patch
+        options:
+          - major
+          - minor
+          - patch
+
+env:
+  BASE_BRANCH: ${{ inputs.release_type == 'release' && 'develop' || 'main' }}
+
+jobs:
+  create_branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          fetch-depth: 0
+          token: ${{ steps.get_workflow_token.outputs.token }}
+          # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 8
+          cache: 'maven' 
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+    
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
+
+      - name: Create new branch
+        run: |
+          # determine what the new version will be
+          CUR_VERSION_RAW=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Found current version raw of $CUR_VERSION_RAW"
+          CUR_VERSION=${CUR_VERSION_RAW//-SNAPSHOT/}
+          echo "Set CUR_VERSION to $CUR_VERSION"
+          # If it's a patch, we don't need to bump it since the release plugin would have bumped it already
+          if [[ "${{ inputs.version_bump_type}}" == "patch" ]]; then
+            RELEASE_VERSION=$CUR_VERSION
+          else
+            RELEASE_VERSION=$(pysemver bump ${{ inputs.version_bump_type }} $CUR_VERSION)
+          fi
+          DEVELOP_VERSION=$(pysemver bump patch $RELEASE_VERSION)
+          
+          NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$RELEASE_VERSION
+          echo "Creating tag $NEW_TAG"
+          # create the new branch 
+          NEW_BRANCH_NAME="${{ inputs.release_type }}/$RELEASE_VERSION"
+          git checkout -b $NEW_BRANCH_NAME
+          mvn --batch-mode release:prepare -Dtag=$NEW_TAG \
+          -DreleaseVersion=$RELEASE_VERSION \
+          -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
+          git push -u origin $NEW_BRANCH_NAME
+
