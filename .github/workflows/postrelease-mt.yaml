@@ -9,12 +9,6 @@ on:
           release_branch: The name of the release branch that should be merged back into the main branches develop and main, depending on branch type.
         type: string
         required: true
-      environments_deployed_to:
-        description: >
-          environments_deployed_to: Which prod environments were deployed to. Used in the tag message
-        type: string
-        default: usprivate,uspublic,ausprivate,canprivate,fedramp
-        required: false
       release_date_override:
         description: >
           release_date_override: The date override in which the release occurred. Used in the tag message
@@ -39,16 +33,22 @@ jobs:
           fetch-tags: true # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
           token: ${{ steps.get_workflow_token.outputs.token }}
 
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
         with:
-          node-version-file: 'package.json'
-          cache: 'npm'
+          distribution: corretto
+          java-version: 8
+          cache: 'maven' 
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
 
       - name: Setup git user
         uses: ./.github/actions/setup-git-user
-  
 
       - name: determine branch type
         id: determine_branch_type
@@ -73,13 +73,13 @@ jobs:
           git checkout -b ${{ inputs.release_branch }} origin/${{ inputs.release_branch }}
           git status
           git merge-base ${{ inputs.release_branch }} origin/$TARGET_BRANCH # debugging statement
-          NEW_VERSION=$(npm pkg get version | xargs)
+          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | xargs)
           CUR_DATE=$(date +"%Y-%m-%d")
           if [[ ! -z "${{ inputs.release_date_override }}" ]]; then
             echo "release_date_override value of '${{ inputs.release_date_override }}' identified. Using that instead of $CUR_DATE."
             CUR_DATE="${{ inputs.release_date_override }}"
           fi
-          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE to ${{ inputs.environments_deployed_to }}"
+          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE"
           echo "PR_BODY=$PR_BODY"
           PR_URL=$(gh pr create \
             --base $TARGET_BRANCH \
