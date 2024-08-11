@@ -53,10 +53,11 @@ jobs:
           java-version: '8'
           distribution: 'corretto'
           server-id: ossrh
-          server-username: ${{ vars.sonatype_username }}
-          server-password: ${{ secrets.sonatype_password }}
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY}}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          # NOTE: the auth values here are only setting the names of environment variables to look for. This action can't actually import the values themselves
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -86,6 +87,10 @@ jobs:
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
           
       - name: Perform the release
+        env:
+          OSSRH_USERNAME: ${{ vars.sonatype_username }}
+          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn release:perform -P release-sign-artifacts
           git push -u origin ${{ inputs.release_branch }}

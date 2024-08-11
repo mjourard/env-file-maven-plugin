@@ -34,13 +34,27 @@ These are repository secrets that should be setup to be accessible in all enviro
 | ---- | ----------------- | --------------- | ----------- |
 | GH_APP_SECRET_KEY | required | `-----BEGIN (RSA|DSA|EC|OPENSSH|PGP) PRIVATE KEY-----[\s\S]+?-----END (RSA|DSA|EC|OPENSSH|PGP) PRIVATE KEY-----` | The private key that was given when the app was initially created. It'll be the same private key on every repo. |
 
+## Environment Variables
+
+These are environment variables that should only be available in certain environments, or should be different in different environments
+
+| Name | optional/required | Possible Values | Description | 
+| ---- | ----------------- | --------------- | ----------- |
+| SONATYPE_USERNAME | required | .* | Allows authentication and publishing to the sonatype repository. Should be the access token username when you sign into `https://s01.oss.sonatype.org/#profile;User%20Token` |
 
 ## Environment Secrets
 
 These are repository secrets that should only be available in certain environments, or should be different in different environments
 
+To get GPG secret keys after they've been generated, so the following:
+
+```
+gpg --list-secret-keys --keyid-format LONG
+gpg --export-secret-keys --armor ${KEY_ID}
+```
+
 | Name | optional/required | Possible Values | Description | 
 | ---- | ----------------- | --------------- | ----------- |
-| SONATYPE_USERNAME | required | .* | Allows authentication and publishing to the sonatype repository. Should be the JIRA username used to create the repo in https://issues.sonatype.org/ |
-| SONATYPE_PASSWORD | required | .* | See `SONATYPE_USERNAME`. Should be the JIRA password. NOTE: For your local settings.xml file, you'll need to escape the following characters according to standard XML escape rules: quote ("), apostrophe ('), less-than (<)\, greather than (>) and ampersand (&) according to https://stackoverflow.com/questions/1091945/what-characters-do-i-need-to-escape-in-xml-documents. The github action for creating the settings.xml file will do this for you, and so encoding the special characters before saving them into the Github environment is not necessary. |
+| SONATYPE_PASSWORD | required | .* | See `SONATYPE_USERNAME` from 'Environment Variables'. |
+| GPG_PRIVATE_KEY | required | .* | The gpg private key used to releases to Maven central. |
 | GPG_SECRET | required | .* | The secret used to sign the GPG key used for signing releases to Maven central. |
