@@ -13,10 +13,8 @@ on:
         required: true
 
 jobs:
-  generate_github_token:
+  lint:
     runs-on: ubuntu-latest
-    outputs:
-      token: ${{ steps.get_workflow_token.outputs.token }}
     steps:
       - name: Get Token
         id: get_workflow_token
@@ -24,29 +22,30 @@ jobs:
         with:
           application_id: ${{ vars.GH_APP_ID }}
           application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-  lint:
-    runs-on: ubuntu-latest
-    needs: generate_github_token
-    steps:
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release_branch }}
           fetch-depth: 0
-          token: ${{ needs.generate_github_token.outputs.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
       - name: Lint Project Files
         uses: ./.github/actions/lint
   publish:
     runs-on: ubuntu-latest
-    needs: generate_github_token
     environment: prod
     steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release_branch }}
           fetch-depth: 0
-          token: ${{ needs.generate_github_token.outputs.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -113,7 +112,7 @@ jobs:
 
   create_pr_into_main:
     runs-on: ubuntu-latest
-    needs: [publish, generate_github_token]
+    needs: [publish]
     steps:
       - name: Get Token
         id: get_workflow_token
