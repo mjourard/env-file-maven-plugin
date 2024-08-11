@@ -52,7 +52,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10.6'
-          cache: 'pipenv'
       - name: Install python dependencies
         run: pip install -r requirements.txt
     
@@ -63,7 +62,9 @@ jobs:
         run: |
           # determine what the new version will be
           CUR_VERSION_RAW=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Found current version raw of $CUR_VERSION_RAW"
           CUR_VERSION=${CUR_VERSION_RAW//-SNAPSHOT/}
+          echo "Set CUR_VERSION to $CUR_VERSION"
           # If it's a patch, we don't need to bump it since the release plugin would have bumped it already
           if [[ "${{ inputs.version_bump_type}}" == "patch" ]]; then
             RELEASE_VERSION=$CUR_VERSION
@@ -77,7 +78,7 @@ jobs:
           # create the new branch 
           NEW_BRANCH_NAME="${{ inputs.release_type }}/$RELEASE_VERSION"
           git checkout -b $NEW_BRANCH_NAME
-          mvn ---batch-mode release:prepare -Dtag=$NEW_TAG \
+          mvn --batch-mode release:prepare -Dtag=$NEW_TAG \
           -DreleaseVersion=$RELEASE_VERSION \
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
           git push -u origin $NEW_BRANCH_NAME
