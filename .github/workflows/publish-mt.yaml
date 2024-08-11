@@ -154,9 +154,11 @@ jobs:
           git checkout -b ${{ inputs.release_branch }} origin/${{ inputs.release_branch }}
           git status
           git merge-base ${{ inputs.release_branch }} origin/$TARGET_BRANCH # debugging statement
-          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | xargs)
+          BRANCH_NAME=${{ inputs.release_branch }}
+          RELEASE_VERSION=${BRANCH_NAME//release\//}
+          RELEASE_VERSION=${RELEASE_VERSION//hotfix\//}
           CUR_DATE=$(date +"%Y-%m-%d")
-          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE"
+          PR_BODY="Release version $RELEASE_VERSION deployed on $CUR_DATE"
           echo "PR_BODY=$PR_BODY"
           PR_URL=$(gh pr create \
             --base $TARGET_BRANCH \
@@ -165,4 +167,4 @@ jobs:
             --title "${{ inputs.release_branch }} into $TARGET_BRANCH" \
             --body "$PR_BODY")
           echo "Created PR at $PR_URL"
-          GH_TOKEN=${{ steps.get_workflow_token.outputs.token }} gh pr merge $PR_URL --auto --merge
+          gh pr merge $PR_URL --auto --merge
