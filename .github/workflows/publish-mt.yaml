@@ -71,12 +71,6 @@ jobs:
                 }
               }
             ]
-      - name: Publish package
-        run: | 
-          mvn --batch-mode deploy
-          mvn clean
-          mvn release:prepare
-          mvn release:perform -P release-sign-artifacts
 
       - name: Setup Python
         uses: actions/setup-python@v4
