@@ -88,7 +88,8 @@ jobs:
           # determine what the new version is supposed to be based on the branch name
           BRANCH_NAME=${{ inputs.release_branch }}
           RELEASE_VERSION=${BRANCH_NAME//release\//}
-          RELEASE_VERSION=${BRANCH_NAME//hotfix\//}
+          RELEASE_VERSION=${RELEASE_VERSION//hotfix\//}
+          echo "Bumping $RELEASE_VERSION by patch for the next development version"
           DEVELOP_VERSION=$(pysemver bump patch $RELEASE_VERSION)
           NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$RELEASE_VERSION
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
