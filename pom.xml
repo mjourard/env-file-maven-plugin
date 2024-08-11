@@ -6,7 +6,7 @@
 
     <groupId>io.github.mjourard</groupId>
     <artifactId>env-file-maven-plugin</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>Dotenv File-loading Maven Plugin</name>
