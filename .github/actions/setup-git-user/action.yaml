@@ -1,0 +1,11 @@
+name: Setup Git user
+description: Sets the git user's name and email to enable pushing commits to the remote
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        git config user.name "Github Actions"
+        # TODO: determine what the email should actually be, as I don't think this should be it...
+        git config user.email githubactions@bonterratech.com

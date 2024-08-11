@@ -47,8 +47,15 @@ jobs:
           distribution: corretto
           java-version: 8
           cache: 'maven' 
-    
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+          cache: 'pipenv'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+    
       - name: Setup git user
         uses: ./.github/actions/setup-git-user
 
@@ -56,11 +63,16 @@ jobs:
         run: |
           # determine what the new version will be
           npm version ${{ inputs.version_bump_type }} --no-git-tag-version
-          NEW_VERSION=$(npm pkg get version | xargs)
+          CUR_VERSION_RAW=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          CUR_VERSION=${CUR_VERSION_RAW//-SNAPSHOT/}
+          NEW_VERSION=$(pysemver bump ${{ inputs.version_bump_type }} $CUR_VERSION)
+          NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$NEW_VERSION
+          echo "Creating tag $NEW_TAG"
           # create the new branch 
           NEW_BRANCH_NAME="${{ inputs.release_type }}/$NEW_VERSION"
           git checkout -b $NEW_BRANCH_NAME
-          git add .
-          git commit -m "Ver. bump to $NEW_VERSION via CICD"
+          mvn ---batch-mode release:prepare -Dtag=$NEW_TAG \
+          -DreleaseVersion=$NEW_VERSION \
+          -DdevelopmentVersion=$NEW_VERSION-SNAPSHOT
           git push -u origin $NEW_BRANCH_NAME
 
