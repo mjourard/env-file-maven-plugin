@@ -1,7 +1,7 @@
 name: Publish Workflow Manually Triggered
 run-name: Publishing ${{ inputs.release_branch }} to maven central
-# This will create a new branch off of the develop branch, or the main branch if it's a hotfix
-# Does not run any maven commands since that should all happen during the publishing process
+# This will actually push whatever is in the input branch up to the main central maven repository, tag it and then open a PR into main
+# with auto-merge enabled to create a merge commit into main
 
 on:
   workflow_dispatch:
