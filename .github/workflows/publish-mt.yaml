@@ -1,0 +1,183 @@
+name: Publish Workflow Manually Triggered
+run-name: Publishing ${{ inputs.release_branch }} to maven central
+# This will create a new branch off of the develop branch, or the main branch if it's a hotfix
+# Does not run any maven commands since that should all happen during the publishing process
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: >
+          release_branch: The name of the release branch that should be published from and then merged back into the main branches develop and main, depending on branch type.
+        type: string
+        required: true
+
+jobs:
+  generate_github_token:
+    runs-on: ubuntu-latest
+    outputs:
+      token: ${{ steps.get_workflow_token.outputs.token }}
+    steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+  lint:
+    runs-on: ubuntu-latest
+    needs: generate_github_token
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ needs.generate_github_token.outputs.token }}
+      - name: Lint Project Files
+        uses: ./.github/actions/lint
+  publish:
+    runs-on: ubuntu-latest
+    needs: generate_github_token
+    environment: prod
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ needs.generate_github_token.outputs.token }}
+          # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'corretto'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Setup maven settings file
+        uses: whelk-io/maven-settings-xml-action@v20
+        with:
+          servers: '[{ "id": "ossrh", "username": "${{ vars.sonatype_username }}", "password" : "${{ secrets.sonatype_password }}" }]'
+          profiles: >
+            [
+              {
+                "id": "ossrh",
+                "activation": {
+                  "activeByDefault": "true"
+                },
+                "properties": {
+                  "gpg.passphrase": "${{ secrets.gpg_secret }}"
+                }
+              }
+            ]
+      - name: Publish package
+        run: | 
+          mvn --batch-mode deploy
+          mvn clean
+          mvn release:prepare
+          mvn release:perform -P release-sign-artifacts
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+    
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
+
+      - name: Prepare the release
+        id: prepare_release
+        run: |
+          # determine what the new version is supposed to be based on the branch name
+          BRANCH_NAME=${{ inputs.release_branch }}
+          RELEASE_VERSION=${BRANCH_NAME//release\//}
+          RELEASE_VERSION=${BRANCH_NAME//hotfix\//}
+          DEVELOP_VERSION=$(pysemver bump patch $RELEASE_VERSION)
+          NEW_TAG=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$RELEASE_VERSION
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "RELEASE_VERSION=$RELEASE_VERSION, DEVELOP_VERSION=$DEVELOP_VERSION, NEW_TAG=$NEW_TAG"
+          # create the new branch 
+          mvn --batch-mode release:prepare -Dtag=$NEW_TAG \
+          -DreleaseVersion=$RELEASE_VERSION \
+          -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
+          
+      - name: Perform the release
+        run: |
+          mvn release:perform -P release-sign-artifacts
+          git push -u origin ${{ inputs.release_branch }}
+          git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
+
+  create_pr_into_main:
+    runs-on: ubuntu-latest
+    needs: [publish, generate_github_token]
+    steps:
+      - name: Get Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.GH_APP_ID }}
+          application_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      - name: Checkout release branch for Node Setup
+        uses: actions/checkout@v4
+        with:
+          ref: develop # using develop because it didn't have the custom action in it
+          fetch-depth: 0 # required for the shared histories needed for merging
+          fetch-tags: true # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+          token: ${{ steps.get_workflow_token.outputs.token }}
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 8
+          cache: 'maven' 
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
+
+      - name: determine branch type
+        id: determine_branch_type
+        run: |
+          BRANCH_TYPE=$(cut -d'/' -f1 <<<'${{ inputs.release_branch }}')
+          if [[ "$BRANCH_TYPE" == "release" ]]; then
+            echo "type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_TYPE" == "hotfix" ]]; then
+            echo "type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid branch name: branch does not apear to be one of the supported release branch types of either 'release' or 'hotfix'. Parsed value '$BRANCH_TYPE' for BRANCH_TYPE."
+            exit 1
+          fi
+
+      - name: Open PR into main
+        env:
+          TARGET_BRANCH: main
+          GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          git fetch origin --verbose
+          echo "checking out ${{ inputs.release_branch }}"
+          git checkout -b ${{ inputs.release_branch }} origin/${{ inputs.release_branch }}
+          git status
+          git merge-base ${{ inputs.release_branch }} origin/$TARGET_BRANCH # debugging statement
+          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | xargs)
+          CUR_DATE=$(date +"%Y-%m-%d")
+          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE"
+          echo "PR_BODY=$PR_BODY"
+          PR_URL=$(gh pr create \
+            --base $TARGET_BRANCH \
+            --fill-verbose \
+            --head ${{ inputs.release_branch }} \
+            --title "${{ inputs.release_branch }} into $TARGET_BRANCH" \
+            --body "$PR_BODY")
+          echo "Created PR at $PR_URL"
+          GH_TOKEN=${{ steps.get_workflow_token.outputs.token }} gh pr merge $PR_URL --auto --merge

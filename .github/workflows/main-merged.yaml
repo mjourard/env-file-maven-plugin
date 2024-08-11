@@ -38,21 +38,6 @@ jobs:
       - name: Setup git user
         uses: ./.github/actions/setup-git-user
 
-      - name: Tag the latest commit in local main branch
-        env:
-          GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
-        run: |
-          NEW_VERSION=$(npm pkg get version | xargs)
-          PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/$SHA/pulls --jq '.[0].number')
-          echo "PR_NUMBER=$PR_NUMBER"
-          PR_DESCRIPTION=$(gh api repos/${{ github.repository }}/pulls/$PR_NUMBER --jq '.body')
-          echo "PR_DESCRIPTION=$PR_DESCRIPTION"
-
-          echo "Tagging with version v$NEW_VERSION"
-          echo "Creating tag message"
-          git tag -a v$NEW_VERSION -m "$PR_DESCRIPTION"
-          git push origin v$NEW_VERSION
-
       - name: Merge branch main into develop
         env:
           HEAD_BRANCH: main
