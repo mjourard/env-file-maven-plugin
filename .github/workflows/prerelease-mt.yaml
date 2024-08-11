@@ -62,7 +62,9 @@ jobs:
         run: |
           # determine what the new version will be
           CUR_VERSION_RAW=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Found current version raw of $CUR_VERSION_RAW"
           CUR_VERSION=${CUR_VERSION_RAW//-SNAPSHOT/}
+          echo "Set CUR_VERSION to $CUR_VERSION"
           # If it's a patch, we don't need to bump it since the release plugin would have bumped it already
           if [[ "${{ inputs.version_bump_type}}" == "patch" ]]; then
             RELEASE_VERSION=$CUR_VERSION
