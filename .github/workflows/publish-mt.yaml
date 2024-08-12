@@ -73,18 +73,18 @@ jobs:
         run: |
           cat /home/runner/.m2/settings.xml
       # we do this because the setup-java action can't do multiple servers but will initialise the gpg stuff
-      - name: Setup maven settings file for github
-        uses: whelk-io/maven-settings-xml-action@v22
-        with:
-          servers: >
-            [
-              { "id": "githubOAuth", "password": "${env.USER_PAT}" },
-              { "id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}" },
-              { "id": "gpg.passphrase", "password": "${env.MAVEN_GPG_PASSPHRASE}" }
-            ]
-      - name: check settings.xml p2
-        run: |
-          cat /home/runner/.m2/settings.xml
+      # - name: Setup maven settings file for github
+      #   uses: whelk-io/maven-settings-xml-action@v22
+      #   with:
+      #     servers: >
+      #       [
+      #         { "id": "githubOAuth", "password": "${env.USER_PAT}" },
+      #         { "id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}" },
+      #         { "id": "gpg.passphrase", "password": "${env.MAVEN_GPG_PASSPHRASE}" }
+      #       ]
+      # - name: check settings.xml p2
+      #   run: |
+      #     cat /home/runner/.m2/settings.xml
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -123,16 +123,16 @@ jobs:
           git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
 
       
-      - name: Checkout release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
-          fetch-depth: 0
-          token: ${{ steps.get_workflow_token.outputs.token }}
+      # - name: Checkout release tag
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
+      #     fetch-depth: 0
+      #     token: ${{ steps.get_workflow_token.outputs.token }}
     
-      - name: Publish github pages
-        run: |
-          mvn -e clean site site:stage
+      # - name: Publish github pages
+      #   run: |
+      #     mvn -e clean site site:stage
 
   create_pr_into_main:
     runs-on: ubuntu-latest

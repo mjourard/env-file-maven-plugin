@@ -64,10 +64,6 @@
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <site>
-            <id>github-site</id>
-            <url>https://mjourard.github.io/env-file-maven-plugin</url>
-        </site>
     </distributionManagement>
     <reporting>
         <outputDirectory>target/site</outputDirectory>
