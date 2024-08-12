@@ -78,7 +78,6 @@ jobs:
       - name: Prepare the release
         id: prepare_release
         run: |
-          cat /home/runner/.m2/settings.xml
           # determine what the new version is supposed to be based on the branch name
           BRANCH_NAME=${{ inputs.release_branch }}
           RELEASE_VERSION=${BRANCH_NAME//release\//}
@@ -93,8 +92,26 @@ jobs:
           -DreleaseVersion=$RELEASE_VERSION \
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
 
+      - name: Perform the release
+        env:
+          OSSRH_USERNAME: ${{ vars.sonatype_username }}
+          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn release:perform -P release-sign-artifacts
+          git push -u origin ${{ inputs.release_branch }}
+          git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
+
+      
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
+          fetch-depth: 0
+          token: ${{ steps.get_workflow_token.outputs.token }}
+
       - name: Setup maven settings file for github
-        uses: whelk-io/maven-settings-xml-action@v20
+        uses: whelk-io/maven-settings-xml-action@v22
         with:
           servers: '[{ "id": "githubOAuth", "password" : "${{ secrets.USER_PAT }}" }]'
           profiles: >
@@ -107,30 +124,8 @@ jobs:
               }
             ]
           
-      - name: Perform the release
-        env:
-          OSSRH_USERNAME: ${{ vars.sonatype_username }}
-          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          cat /home/runner/.m2/settings.xml
-          mvn release:perform -P release-sign-artifacts
-          git push -u origin ${{ inputs.release_branch }}
-          git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
-
-      
-      - name: Checkout release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
-          fetch-depth: 0
-          token: ${{ steps.get_workflow_token.outputs.token }}
           
       - name: Publish github pages
-        env:
-          OSSRH_USERNAME: ${{ vars.sonatype_username }}
-          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn -e clean site site:stage
 
