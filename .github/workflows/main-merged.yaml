@@ -9,7 +9,7 @@ on:
       - '**' # Ignore pushes to tags
   
 jobs:
-  tag_release_commit:
+  pr_to_sync_develop:
     if: ${{ startsWith(github.ref, 'refs/heads/main') }}
     runs-on: ubuntu-latest
     env:
@@ -46,6 +46,6 @@ jobs:
             --base $TARGET_BRANCH \
             --fill-verbose \
             --head $HEAD_BRANCH \
-            --title "$HEAD_BRANCH into $TARGET_BRANCH for v$NEW_VERSION")
+            --title "$HEAD_BRANCH into $TARGET_BRANCH for $NEW_VERSION")
           echo "Created PR at $PR_URL"
           gh pr merge $PR_URL --auto --merge

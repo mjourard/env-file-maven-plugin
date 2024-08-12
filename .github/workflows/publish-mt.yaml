@@ -1,7 +1,7 @@
 name: Publish Workflow Manually Triggered
 run-name: Publishing ${{ inputs.release_branch }} to maven central
-# This will create a new branch off of the develop branch, or the main branch if it's a hotfix
-# Does not run any maven commands since that should all happen during the publishing process
+# This will actually push whatever is in the input branch up to the main central maven repository, tag it and then open a PR into main
+# with auto-merge enabled to create a merge commit into main
 
 on:
   workflow_dispatch:
@@ -53,10 +53,11 @@ jobs:
           java-version: '8'
           distribution: 'corretto'
           server-id: ossrh
-          server-username: ${{ vars.sonatype_username }}
-          server-password: ${{ secrets.sonatype_password }}
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY}}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          # NOTE: the auth values here are only setting the names of environment variables to look for. This action can't actually import the values themselves
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -86,6 +87,10 @@ jobs:
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
           
       - name: Perform the release
+        env:
+          OSSRH_USERNAME: ${{ vars.sonatype_username }}
+          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn release:perform -P release-sign-artifacts
           git push -u origin ${{ inputs.release_branch }}
@@ -149,9 +154,11 @@ jobs:
           git checkout -b ${{ inputs.release_branch }} origin/${{ inputs.release_branch }}
           git status
           git merge-base ${{ inputs.release_branch }} origin/$TARGET_BRANCH # debugging statement
-          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | xargs)
+          BRANCH_NAME=${{ inputs.release_branch }}
+          RELEASE_VERSION=${BRANCH_NAME//release\//}
+          RELEASE_VERSION=${RELEASE_VERSION//hotfix\//}
           CUR_DATE=$(date +"%Y-%m-%d")
-          PR_BODY="Release version $NEW_VERSION deployed on $CUR_DATE"
+          PR_BODY="Release version $RELEASE_VERSION deployed on $CUR_DATE"
           echo "PR_BODY=$PR_BODY"
           PR_URL=$(gh pr create \
             --base $TARGET_BRANCH \
@@ -160,4 +167,4 @@ jobs:
             --title "${{ inputs.release_branch }} into $TARGET_BRANCH" \
             --body "$PR_BODY")
           echo "Created PR at $PR_URL"
-          GH_TOKEN=${{ steps.get_workflow_token.outputs.token }} gh pr merge $PR_URL --auto --merge
+          gh pr merge $PR_URL --auto --merge
