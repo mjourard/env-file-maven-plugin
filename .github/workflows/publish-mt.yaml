@@ -11,6 +11,11 @@ on:
           release_branch: The name of the release branch that should be published from and then merged back into the main branches develop and main, depending on branch type.
         type: string
         required: true
+      skip_publish:
+        description: >
+          skip_publish: If set to true, the publish step will be skipped. This is useful if you only want to create a PR into main without actually publishing the release.
+        type: boolean
+        default: false
 
 jobs:
   lint:
@@ -33,6 +38,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     environment: prod
+    if: ${{ !inputs.skip_publish }}
     steps:
       - name: Get Token
         id: get_workflow_token
@@ -99,6 +105,7 @@ jobs:
   create_pr_into_main:
     runs-on: ubuntu-latest
     needs: [publish]
+    if: ${{ !cancelled() && (inputs.skip_publish == true || needs.publish.result != 'failure') }}
     steps:
       - name: Get Token
         id: get_workflow_token
