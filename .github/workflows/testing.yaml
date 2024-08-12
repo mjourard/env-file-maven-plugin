@@ -28,6 +28,6 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           NEW_TAG="env-file-maven-plugin-testing-${{ github.run_number }}"
-          git remote set-url origin https://x:${{ steps.get_workflow_token.outputs.token }}@github.com/${{ github.repository }}.git
+          # git remote set-url origin https://x:${{ steps.get_workflow_token.outputs.token }}@github.com/${{ github.repository }}.git
           git tag -a $NEW_TAG -m "env-file-maven-plugin-testing-${{ github.run_number }} testing tagging auth"
           git push origin tag $NEW_TAG
