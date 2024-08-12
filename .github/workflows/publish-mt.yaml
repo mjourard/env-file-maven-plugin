@@ -98,9 +98,9 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
+          mvn release:perform -P release-sign-artifacts
           git push -u origin ${{ inputs.release_branch }}
           git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
-          mvn release:perform -P release-sign-artifacts
 
   create_pr_into_main:
     runs-on: ubuntu-latest
