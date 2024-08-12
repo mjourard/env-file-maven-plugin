@@ -102,6 +102,34 @@ jobs:
           git push -u origin ${{ inputs.release_branch }}
           git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
 
+      - name: Setup maven settings file for github
+        uses: whelk-io/maven-settings-xml-action@v20
+        with:
+          servers: '[{ "id": "githubOAuth", "password" : "${{ secrets.USER_PAT }}" }]'
+          profiles: >
+            [
+              {
+                "id": "github",
+                "activation": {
+                  "activeByDefault": "true"
+                }
+              }
+            ]
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
+          fetch-depth: 0
+          token: ${{ steps.get_workflow_token.outputs.token }}
+          
+      - name: Publish github pages
+        env:
+          OSSRH_USERNAME: ${{ vars.sonatype_username }}
+          OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn -e clean site site:stage
+
   create_pr_into_main:
     runs-on: ubuntu-latest
     needs: [publish]
