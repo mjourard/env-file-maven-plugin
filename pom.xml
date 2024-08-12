@@ -6,7 +6,7 @@
 
     <groupId>io.github.mjourard</groupId>
     <artifactId>env-file-maven-plugin</artifactId>
-    <version>2.0.6-SNAPSHOT</version>
+    <version>2.0.6</version>
     <packaging>maven-plugin</packaging>
 
     <name>Dotenv File-loading Maven Plugin</name>
@@ -32,7 +32,7 @@
         <connection>scm:git:git://github.com/mjourard/env-file-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:mjourard/env-file-maven-plugin.git</developerConnection>
         <url>https://github.com/mjourard/env-file-maven-plugin</url>
-        <tag>env-file-maven-plugin-2.0.0</tag>
+        <tag>env-file-maven-plugin-2.0.6</tag>
     </scm>
     <organization>
         <name>Matt Jourard OSS Projects</name>
