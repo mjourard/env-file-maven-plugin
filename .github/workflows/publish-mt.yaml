@@ -39,6 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     if: ${{ !inputs.skip_publish }}
+    env:
+      OSSRH_USERNAME: ${{ vars.sonatype_username }}
+      OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
+      MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      USER_PAT: ${{ secrets.USER_PAT}}
     steps:
       - name: Get Token
         id: get_workflow_token
@@ -64,7 +69,22 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY}}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           # NOTE: the auth values here are only setting the names of environment variables to look for. This action can't actually import the values themselves
-
+      - name: check settings.xml
+        run: |
+          cat /home/runner/.m2/settings.xml
+      # we do this because the setup-java action can't do multiple servers but will initialise the gpg stuff
+      # - name: Setup maven settings file for github
+      #   uses: whelk-io/maven-settings-xml-action@v22
+      #   with:
+      #     servers: >
+      #       [
+      #         { "id": "githubOAuth", "password": "${env.USER_PAT}" },
+      #         { "id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}" },
+      #         { "id": "gpg.passphrase", "password": "${env.MAVEN_GPG_PASSPHRASE}" }
+      #       ]
+      # - name: check settings.xml p2
+      #   run: |
+      #     cat /home/runner/.m2/settings.xml
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -91,7 +111,7 @@ jobs:
           mvn --batch-mode release:prepare -Dtag=$NEW_TAG \
           -DreleaseVersion=$RELEASE_VERSION \
           -DdevelopmentVersion=$DEVELOP_VERSION-SNAPSHOT
-          
+
       - name: Perform the release
         env:
           OSSRH_USERNAME: ${{ vars.sonatype_username }}
@@ -101,6 +121,18 @@ jobs:
           mvn release:perform -P release-sign-artifacts
           git push -u origin ${{ inputs.release_branch }}
           git push origin tag ${{ steps.prepare_release.outputs.NEW_TAG }}
+
+      
+      # - name: Checkout release tag
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ steps.prepare_release.outputs.NEW_TAG }}
+      #     fetch-depth: 0
+      #     token: ${{ steps.get_workflow_token.outputs.token }}
+    
+      # - name: Publish github pages
+      #   run: |
+      #     mvn -e clean site site:stage
 
   create_pr_into_main:
     runs-on: ubuntu-latest

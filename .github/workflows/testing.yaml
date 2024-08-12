@@ -19,15 +19,40 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.get_workflow_token.outputs.token }}
           # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'corretto'
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY}}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          # NOTE: the auth values here are only setting the names of environment variables to look for. This action can't actually import the values themselves
+
+      - name: Setup maven settings file for github
+        uses: whelk-io/maven-settings-xml-action@v20
+        with:
+          servers: '[{ "id": "githubOAuth", "password" : "${{ secrets.USER_PAT }}" }]'
+          profiles: >
+            [
+              {
+                "id": "github",
+                "activation": {
+                  "activeByDefault": "true"
+                }
+              }
+            ]
+
       - name: Setup git user
         uses: ./.github/actions/setup-git-user
-      - name: Tagging
+          
+      - name: Publish github pages
         env:
           OSSRH_USERNAME: ${{ vars.sonatype_username }}
           OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          NEW_TAG="env-file-maven-plugin-testing-${{ github.run_number }}"
-          # git remote set-url origin https://x:${{ steps.get_workflow_token.outputs.token }}@github.com/${{ github.repository }}.git
-          git tag -a $NEW_TAG -m "env-file-maven-plugin-testing-${{ github.run_number }} testing tagging auth"
-          git push origin tag $NEW_TAG
+          mvn -e clean site site:stage
+
