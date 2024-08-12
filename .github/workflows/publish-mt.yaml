@@ -69,7 +69,7 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY}}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           # NOTE: the auth values here are only setting the names of environment variables to look for. This action can't actually import the values themselves
-
+      - run: /home/runner/.m2/settings.xml
       # we do this because the setup-java action can't do multiple servers but will initialise the gpg stuff
       - name: Setup maven settings file for github
         uses: whelk-io/maven-settings-xml-action@v22
@@ -80,7 +80,7 @@ jobs:
               { "id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}" },
               { "id": "gpg.passphrase", "password": "${env.MAVEN_GPG_PASSPHRASE}" }
             ]
-
+      - run: /home/runner/.m2/settings.xml
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
