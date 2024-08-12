@@ -19,6 +19,8 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.get_workflow_token.outputs.token }}
           # since we are adding tags, it'd be better to fail locally than on the remote if adding dupe tags
+      - name: Setup git user
+        uses: ./.github/actions/setup-git-user
       - name: Tagging
         env:
           OSSRH_USERNAME: ${{ vars.sonatype_username }}
@@ -26,5 +28,6 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           NEW_TAG="env-file-maven-plugin-testing-${{ github.run_number }}"
+          git remote set-url origin https://x:${{ steps.get_workflow_token.outputs.token }}@github.com/${{ github.repository }}.git
           git tag -a $NEW_TAG -m "env-file-maven-plugin-testing-${{ github.run_number }} testing tagging auth"
           git push origin tag $NEW_TAG
