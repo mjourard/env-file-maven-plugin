@@ -54,5 +54,5 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.sonatype_password }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          mvn clean site site:stage scm-publish:publish-scm
+          mvn -e clean site site:stage
 
