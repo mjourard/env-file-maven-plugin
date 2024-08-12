@@ -34,7 +34,7 @@ jobs:
       - name: Setup maven settings file for github
         uses: whelk-io/maven-settings-xml-action@v20
         with:
-          servers: '[{ "id": "githubOAuth", "password" : "${{ steps.get_workflow_token.outputs.token }}" }]'
+          servers: '[{ "id": "githubOAuth", "password" : "${{ secrets.USER_PAT }}" }]'
           profiles: >
             [
               {
